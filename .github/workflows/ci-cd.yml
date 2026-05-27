@@ -1,4 +1,4 @@
-# neps-infrastructure/ci-cd/github-workflow-template.yml
+# neps-portal/.github/workflows/ci-cd.yml - Triggered with GHCR_PAT secret configured
 name: NEPS CI/CD
 
 on:
