@@ -26,7 +26,7 @@ export function StressScoreTrend() {
         </select>
       </div>
 
-      <div className="min-h-0 h-50 w-full">
+      <div className="min-h-[120px] h-50 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={stressScoreData}
