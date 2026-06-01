@@ -1,14 +1,14 @@
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
-RUN addgroup -g 1001 -S neps && adduser -S neps -u 1001
 
+# Install deps first for better layer caching
 COPY package*.json ./
 RUN npm ci
 
+# Copy source
 COPY . .
-RUN chown -R neps:neps /app
-USER neps
 
 EXPOSE 3000
+
 CMD ["npm", "run", "dev"]
