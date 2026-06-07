@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Typewriter } from "./components/Typewriter"
+import { Typewriter } from "./components/ui/Typewriter"
 
 export default function Home() {
   return (

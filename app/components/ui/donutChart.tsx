@@ -37,7 +37,7 @@ export default function DonutChart({
   }, []);
 
   return (
-    <div className="grid grid-cols-[1.3fr_2fr] text-[0.7rem] text-black-700">
+    <div className="grid grid-cols-[1.3fr_2fr] text-[0.7rem] text-gray-900">
       <svg width="90%" viewBox="0 0 100 100">
         <circle
           cx="50"

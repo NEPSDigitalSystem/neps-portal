@@ -7,7 +7,7 @@ import Image from "next/image";
 export default function WorkPackageOverview() {
   
     return (
-    <div className="w-[35%] relative shadow-sm border border-gray-100 p-4 rounded-xl">
+    <div className="w-full relative shadow-sm border border-gray-100 p-4 rounded-xl bg-white">
       <div className="flex gap-2 items-center mb-3">
         <p className="font-bold text-sm text-black">Work Package Overview</p>
         <Image src="/info.png" alt="info" width={15} height={15}/>
@@ -16,7 +16,7 @@ export default function WorkPackageOverview() {
         {workPackageData.map((pack) => (
           <div
             key={pack.id}
-            className="grid grid-cols-[0.2fr_0.3fr_1.8fr_0.5fr] py-1 border-b border-gray-200 text-[0.7rem]"
+            className="grid grid-cols-[0.2fr_0.3fr_1.8fr_0.5fr] py-1 border-b border-gray-200 text-[0.7rem] text-gray-900"
           >
             <div className={`flex w-5 h-5 rounded-full items-center justify-center ${pack.label}`}><p>{pack.profile}</p></div>
             <span>{pack.package}</span>

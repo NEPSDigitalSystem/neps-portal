@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export function AlertCard() {
   return (
-    <div className="bg-white-100 w-[30%] shadow-sm border border-gray-100 text-red-700 p-3 rounded-xl">
+    <div className="bg-white w-full shadow-sm border border-gray-100 text-red-700 p-3 rounded-xl">
       <div className="flex items-center justify-between mb-3">
         <p className="font-bold text-black">Critical Alerts</p>
         <a href="#" className="text-blue-500 hover:text-blue-700 text-sm">

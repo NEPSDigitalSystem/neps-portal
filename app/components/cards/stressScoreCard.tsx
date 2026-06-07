@@ -15,9 +15,9 @@ import {
 
 export function StressScoreTrend() {
   return (
-    <div className="w-[35%] relative max-w-3xl p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="w-full relative p-4 bg-white rounded-xl shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 text-gray-900">
           <p className="text-sm font-semibold">Stress Score Trend (All Sites)</p>
           <Image src="/info.png" alt="info" width={15} height={15}/>
         </div>
@@ -58,7 +58,7 @@ export function StressScoreTrend() {
               axisLine={false}
               tickLine={false}
               ticks={[5, 20, 35]}
-              tickFormatter={(value) => {
+              tickFormatter={(value: number) => {
                 if (value === 5) return 'Low';
                 if (value === 20) return 'Moderate';
                 if (value === 35) return 'High';
