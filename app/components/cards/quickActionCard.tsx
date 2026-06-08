@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function QuickActionCard() {
     return (
-      <div className="w-[30%] bg-white-100 shadow-sm border border-gray-100 text-red-700 p-4 rounded-xl">
+      <div className="w-full bg-white shadow-sm border border-gray-100 text-red-700 p-4 rounded-xl">
         <p className="font-bold text-black mb-3">Quick Actions </p>
         <div className="flex flex-col gap-2">
           <div className="flex justify-between">

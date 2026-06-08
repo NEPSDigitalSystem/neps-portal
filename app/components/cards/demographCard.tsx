@@ -1,10 +1,10 @@
 import Image from "next/image";
-import DonutChart from "../donutChart";
+import DonutChart from "../ui/donutChart";
 import Link from "next/link";
 
 export function DemoGraphics() {
   return (
-    <div className="w-[35%] relative shadow-sm border border-gray-100 p-4 rounded-xl">
+    <div className="w-full relative shadow-sm border border-gray-100 p-4 rounded-xl bg-white">
       <div className="flex gap-2 items-center mb-8">
         <p className="font-bold text-sm text-black">Cohort Demographics (Baseline)</p>
         <Image src="/info.png" alt="info" width={15} height={15}/>

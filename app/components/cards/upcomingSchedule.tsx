@@ -7,7 +7,7 @@ import Image from "next/image";
 export default function UpcomingSchedule() {
   
     return (
-    <div className="w-[25%] relative shadow-sm border border-gray-100 p-4 rounded-xl">
+    <div className="w-full relative shadow-sm border border-gray-100 p-4 rounded-xl bg-white">
       <p className="font-bold mb-3 text-sm text-black">Upcoming Schedule</p>
       <div>
         {upcomingSchedule.map((schedule) => (
@@ -22,8 +22,8 @@ export default function UpcomingSchedule() {
               alt="calendar"
             />
             <div>
-              <p className="font-semibold">{schedule.title}</p>
-              <p className="text-gray-500">{schedule.date} | {schedule.location}</p>
+              <p className="font-semibold text-gray-900">{schedule.title}</p>
+              <p className="text-gray-900">{schedule.date} | {schedule.location}</p>
             </div>
           </div>
         ))}

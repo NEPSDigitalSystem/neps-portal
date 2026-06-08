@@ -186,6 +186,60 @@ export const upcomingSchedule = [
   },
 ]
 
+export const statsData = [
+  {
+    id: 1,
+    title: "Total Participants",
+    value: "5,928",
+    subtitle: "Enrolled across all sites",
+    icon: "users",
+    iconColor: "text-blue-500",
+  },
+  {
+    id: 2,
+    title: "Retention Rate",
+    value: "87%",
+    subtitle: "Last 30 days",
+    icon: "trending-up",
+    iconColor: "text-green-500",
+  },
+  {
+    id: 3,
+    title: "High Distress Alerts",
+    value: "24",
+    subtitle: "This week",
+    icon: "alert-triangle",
+    iconColor: "text-red-500",
+  },
+  {
+    id: 4,
+    title: "Pending Forms",
+    value: "156",
+    subtitle: "Require submission",
+    icon: "clipboard-list",
+    iconColor: "text-orange-500",
+  },
+  {
+    id: 5,
+    title: "Monthly Response Rate",
+    value: "78%",
+    subtitle: "Current wave",
+    icon: "bar-chart-2",
+    iconColor: "text-purple-500",
+  },
+]
+
+export const participantTrendData = [
+  { month: "Aug", enrolled: 4200, active: 3900, dropout: 300 },
+  { month: "Sep", enrolled: 4500, active: 4150, dropout: 350 },
+  { month: "Oct", enrolled: 4800, active: 4400, dropout: 400 },
+  { month: "Nov", enrolled: 5100, active: 4650, dropout: 450 },
+  { month: "Dec", enrolled: 5400, active: 4850, dropout: 550 },
+  { month: "Jan", enrolled: 5600, active: 5050, dropout: 550 },
+  { month: "Feb", enrolled: 5750, active: 5150, dropout: 600 },
+  { month: "Mar", enrolled: 5928, active: 5300, dropout: 628 },
+]
+
 export const stressScoreData = [
   { month: 'Jan', average: 22, range: [16, 27] },
   { month: 'Feb', average: 23, range: [15, 30] },
