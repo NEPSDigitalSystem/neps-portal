@@ -37,7 +37,7 @@ export default function DonutChart({
   }, []);
 
   return (
-    <div className="grid grid-cols-[1.3fr_2fr] text-[0.7rem] text-gray-900">
+    <div className="pb-5 grid grid-cols-[1.3fr_2fr] text-[0.8rem] text-gray-900">
       <svg width="90%" viewBox="0 0 100 100">
         <circle
           cx="50"
@@ -87,7 +87,7 @@ export default function DonutChart({
         />
       </svg>
       <div>
-      <div className="grid grid-cols-[1.4fr_0.5fr_0.5fr] py-1 text_xs">
+      <div className="grid grid-cols-[1.4fr_0.5fr_0.2fr] py-1 text_xs">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#7f72f7]"></span>
           Male
@@ -95,7 +95,7 @@ export default function DonutChart({
         <p className="text-xs">{malePct.toFixed(0)}%</p>
         <p className="text-xs">({male})</p>
       </div>
-      <div className="grid grid-cols-[1.4fr_0.5fr_0.5fr] py-1 text_xs">
+      <div className="grid grid-cols-[1.4fr_0.5fr_0.2fr] py-1 text_xs">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#c3b7f8]"></span>
           Female
@@ -103,7 +103,7 @@ export default function DonutChart({
         <p className="text-xs">{femalePct.toFixed(0)}%</p>
         <p className="text-xs">({female})</p>
       </div>
-      <div className="grid grid-cols-[1.4fr_0.5fr_0.5fr] py-1 text_xs">
+      <div className="grid grid-cols-[1.4fr_0.5fr_0.2fr] py-1 text_xs">
         <div className="flex pb-3 border-b border-gray-300 items-center gap-2">
           <span className="w-3 h-3 rounded-full bg-[#e2e1fa]"></span>
           Other
@@ -111,11 +111,11 @@ export default function DonutChart({
         <p className="text-xs border-b border-gray-300">{otherPct.toFixed(0)}%</p>
         <p className="text-xs border-b border-gray-300">({other})</p>
       </div>
-      <div className="grid mt-3 grid-cols-[1.4fr_1fr] py-1 text_xs">
+      <div className="flex justify-between mt-3 py-1 text_xs">
         <p>Age (Mean +/- SD)</p>
         <p className="text-xs">16.8 +/- 29</p>
       </div>
-      <div className="grid grid-cols-[1.4fr_1fr] py-1 text_xs">
+      <div className="flex justify-between py-1 text_xs">
         <p>Range</p>
         <p className="text-xs">10 - 24 years</p>
       </div>

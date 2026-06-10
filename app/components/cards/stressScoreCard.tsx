@@ -10,12 +10,13 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Tooltip,
 } from 'recharts';
 
 export function StressScoreTrend() {
   return (
-    <div className="w-full relative p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="w-full lg:w-[50%] min-h-[300px] relative p-4 bg-white rounded-xl shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-1.5 text-gray-900">
           <p className="text-sm font-semibold">Stress Score Trend (All Sites)</p>
@@ -26,7 +27,7 @@ export function StressScoreTrend() {
         </select>
       </div>
 
-      <div className="min-h-[120px] h-50 w-full">
+      <div className="min-h-[120px] h-50 w-full pb-5">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={stressScoreData}
@@ -66,6 +67,25 @@ export function StressScoreTrend() {
               }}
               tick={{ fill: '#374151af', fontSize: 11, fontWeight: 500 }}
             />
+            <Tooltip
+              contentStyle={{
+                borderRadius: "8px",
+                border: "1px solid #e5e7eb",
+                fontSize: "12px",
+              }}
+              formatter={(value, name) => {
+                if (name === "range" && Array.isArray(value)) {
+                  return [`[${value[0]} - ${value[1]}]`, "Stress Range"];
+                }
+
+                if (name === "average") {
+                  return [value, "Stress Score Average"];
+                }
+
+                return [value, name];
+              }}
+              labelFormatter={(label) => `Month: ${label}`}
+            />
 
             <Area
               type="monotone"
@@ -89,7 +109,7 @@ export function StressScoreTrend() {
       </div>
 
       <div className="flex absolute bottom-2 right-4">
-        <Link className="text-xs hover:text-blue-700 font-semibold text-blue-500" href="#">View Detailed Trends <span>&rarr;</span></Link>
+        <Link className="text-sm hover:text-blue-700 font-semibold text-blue-500" href="#">View Detailed Trends <span>&rarr;</span></Link>
       </div>
     </div>
   );

@@ -15,15 +15,15 @@ import {
 
 export function ParticipantTrendChart() {
   return (
-    <div className="relative bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex flex-col w-full lg:w-[58%]">
+    <div className="relative bg-white rounded-xl min-h-[300px] p-4 shadow-sm border border-gray-100 flex flex-col w-full lg:w-[50%]">
       <div className="flex justify-between items-center mb-3">
         <p className="text-sm font-semibold text-gray-800">Participant Trend Overview</p>
-        <select className="bg-gray-50 border border-gray-200 text-xs rounded-lg px-2 py-1 text-gray-700 font-medium outline-none">
-          <option>Last 8 Months</option>
+        <select className="bg-gray-50 border border-gray-200 text-xs rounded-lg px-1 py-1.2 text-gray-700 font-medium outline-none">
+          <option>Last 8 Months</option>6
         </select>
       </div>
 
-      <div className="h-52 w-full">
+      <div className="h-52 w-full pb-5">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={participantTrendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="#f0f0f0" />
@@ -79,8 +79,8 @@ export function ParticipantTrendChart() {
         </ResponsiveContainer>
       </div>
 
-      <div className="flex justify-end mt-1">
-        <Link className="text-xs hover:text-blue-700 font-semibold text-blue-500" href="#">
+      <div className="flex absolute bottom-2 right-4">
+        <Link className="text-sm hover:text-blue-700 font-semibold text-blue-500" href="#">
           View Detailed Trends <span>&rarr;</span>
         </Link>
       </div>

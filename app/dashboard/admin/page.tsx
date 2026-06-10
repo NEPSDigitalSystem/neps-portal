@@ -29,39 +29,29 @@ export default function AdminDashboard() {
       </div>
 
       {/* Trend Charts Row */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <ParticipantTrendChart />
-        <div className="flex flex-col gap-4 w-full lg:w-[42%]">
+      <div className="flex flex-col lg:flex-row gap-8">
+          <ParticipantTrendChart />
           <StressScoreTrend />
-          <AlertCard />
-        </div>
       </div>
+      
 
       {/* Data Collection + Work Package + Quick Actions Row */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="w-full lg:w-[35%] overflow-x-auto">
-          <DataCollectionStatus />
-        </div>
-        <div className="w-full lg:w-[35%]">
-          <WorkPackageOverview />
-        </div>
-        <div className="w-full lg:w-[30%]">
-          <QuickActionCard />
-        </div>
+      <div className="flex flex-col lg:flex-row gap-8">
+        <DataCollectionStatus />
+        <WorkPackageOverview />
       </div>
 
       {/* Activity + Schedule + Demographics Row */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="w-full lg:w-[40%] overflow-x-auto">
-          <RecentActivityTable />
-        </div>
-        <div className="w-full lg:w-[25%]">
-          <UpcomingSchedule />
-        </div>
-        <div className="w-full lg:w-[35%]">
-          <DemoGraphics />
-        </div>
+      <div className="flex flex-col lg:flex-row gap-2">
+        <UpcomingSchedule />
+        <AlertCard />
+        <QuickActionCard />
       </div>
+      <div className="flex flex-col lg:flex-row gap-2">
+        <RecentActivityTable />
+        <DemoGraphics />
+      </div>
+      
 
     </div>
   )

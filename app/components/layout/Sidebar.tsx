@@ -94,7 +94,7 @@ export function Sidebar({ role }: { role: string }) {
   const sections = navByRole[role as Role] ?? navByRole.enumerator
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-100 flex flex-col">
+    <aside className="w-65 bg-white border-r border-slate-100 flex flex-col">
       <div className="px-6 py-5 border-b border-slate-100">
         <span className="text-lg font-bold text-slate-800">NEPS Digital</span>
       </div>

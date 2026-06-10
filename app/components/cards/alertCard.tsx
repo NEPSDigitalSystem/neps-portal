@@ -5,9 +5,9 @@ import Image from "next/image";
 
 export function AlertCard() {
   return (
-    <div className="bg-white w-full shadow-sm border border-gray-100 text-red-700 p-3 rounded-xl">
+    <div className="bg-white w-full lg:w-[35%] shadow-sm border border-gray-100 text-red-700 p-3 rounded-xl">
       <div className="flex items-center justify-between mb-3">
-        <p className="font-bold text-black">Critical Alerts</p>
+        <p className="font-bold text-sm text-black">Critical Alerts</p>
         <a href="#" className="text-blue-500 hover:text-blue-700 text-sm">
           View All
         </a>
@@ -27,7 +27,7 @@ export function AlertCard() {
                   height={24}
                 />
                 <div className="flex-1">
-                  <p className="text-black text-xs leading-none">
+                  <p className="text-black text-[0.8rem]">
                     {alert.title}
                   </p>
                   <div className="flex justify-between items-center">
