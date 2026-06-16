@@ -43,3 +43,7 @@ const stats = await apiClient.getProjectStats();
 ## Learn More about Next.js
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+## Metrics
+
+The frontend exposes a `/api/metrics` endpoint for Prometheus scraping. This endpoint depends on the `prom-client` package being installed. If you're building or running the portal locally or in a container, ensure `prom-client` is present in `package.json` and run `npm ci` (or your package manager of choice) so the metrics endpoint can be served correctly.
