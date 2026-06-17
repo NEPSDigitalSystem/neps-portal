@@ -51,8 +51,14 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint || echo "Lint not configured yet"
-      - name: Run tests
-        run: npm test || echo "No tests yet"
+      - name: Run unit tests
+        run: npm run test || echo "Unit tests not configured yet"
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+        if: hashFiles('playwright.config.ts') != ''
+      - name: Run E2E tests
+        run: npm run test:e2e || echo "E2E tests not configured yet"
+        if: hashFiles('playwright.config.ts') != ''
 
   build:
     needs: [check-structure, test]
