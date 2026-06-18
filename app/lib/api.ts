@@ -1,17 +1,13 @@
-// Simple API client helper for interacting with the backend (mock REDCap)
+// Secure API client for the NEPS Portal to interact with the Backend API
 
 import type {
   Participant,
-  ParticipantsResponse,
-  ProjectStats,
-  SurveyResponse,
-  ConsentRecord,
+  PaginatedResponse,
+  PortalStats,
+  DistressTrend,
   DistressScreening,
-  DistressScreeningsResponse,
   WP6Session,
-  WP6SessionsResponse,
   HealthResponse,
-  ParticipantSurveysResponse,
 } from "@/app/types/redcap";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -19,67 +15,84 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 class ApiClient {
   private async fetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-    const response = await fetch(url, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      ...options,
-    });
+    
+    // Secure headers and basic error handling
+    const defaultHeaders = {
+      "Content-Type": "application/json",
+      "X-Requested-With": "XMLHttpRequest",
+    };
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          ...defaultHeaders,
+          ...options?.headers,
+        },
+      });
+
+      if (!response.ok) {
+        // Detailed error for developers, generic for production logs
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `API Error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`
+        );
+      }
+
+      return response.json() as T;
+    } catch (error) {
+      console.error(`Fetch failed for ${endpoint}:`, error);
+      throw error;
     }
-
-    return response.json() as T;
   }
 
-  // Health check
+  // --- HEALTH & SYSTEM ---
   async getHealth(): Promise<HealthResponse> {
-    return this.fetch<HealthResponse>("/api/redcap/health");
+    return this.fetch<HealthResponse>("/health");
   }
 
-  // Participants
-  async getParticipants(country?: string, site?: string, status?: string, limit?: number): Promise<ParticipantsResponse> {
+  // --- PORTAL DATA (New API) ---
+  async getPortalStats(): Promise<PortalStats> {
+    return this.fetch<PortalStats>("/api/portal/stats");
+  }
+
+  async getDistressTrends(country?: string, site?: string): Promise<DistressTrend[]> {
     const params = new URLSearchParams();
     if (country) params.append("country", country);
     if (site) params.append("site", site);
-    if (status) params.append("status", status);
-    if (limit) params.append("limit", limit.toString());
-
-    return this.fetch<ParticipantsResponse>(`/api/redcap/participants?${params}`);
+    return this.fetch<DistressTrend[]>(`/api/portal/distress/trends?${params}`);
   }
 
-  async getParticipant(recordId: string): Promise<Participant> {
-    return this.fetch<Participant>(`/api/redcap/participants/${recordId}`);
+  async getDistressAlerts(status = "open", limit = 50): Promise<PaginatedResponse<DistressScreening>> {
+    const params = new URLSearchParams({ status, limit: limit.toString() });
+    return this.fetch<PaginatedResponse<DistressScreening>>(`/api/portal/distress/alerts?${params}`);
   }
 
-  // Surveys
-  async getParticipantSurveys(recordId: string): Promise<ParticipantSurveysResponse> {
-    return this.fetch<ParticipantSurveysResponse>(`/api/redcap/participants/${recordId}/surveys`);
+  // --- PARTICIPANTS ---
+  async getParticipants(params: {
+    country?: string;
+    site?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<PaginatedResponse<Participant>> {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined) query.append(key, value.toString());
+    });
+    return this.fetch<PaginatedResponse<Participant>>(`/api/portal/participants?${query}`);
   }
 
-  // Consent
-  async getParticipantConsent(recordId: string): Promise<ConsentRecord> {
-    return this.fetch<ConsentRecord>(`/api/redcap/participants/${recordId}/consent`);
+  async getParticipantDetail(recordId: string): Promise<Participant> {
+    return this.fetch<Participant>(`/api/portal/participants/${recordId}`);
   }
 
-  // Distress Screenings
-  async getDistressScreenings(status?: string): Promise<DistressScreeningsResponse> {
-    const params = new URLSearchParams();
-    if (status) params.append("status", status);
-
-    return this.fetch<DistressScreeningsResponse>(`/api/redcap/screenings/distress?${params}`);
+  // --- WP6 INTERVENTIONS ---
+  async getWP6Summary(): Promise<any> {
+    return this.fetch<any>("/api/portal/wp6/summary");
   }
 
-  // WP6 Sessions
-  async getWP6Sessions(recordId: string): Promise<WP6SessionsResponse> {
-    return this.fetch<WP6SessionsResponse>(`/api/redcap/wp6/sessions/${recordId}`);
-  }
-
-  // Stats
-  async getProjectStats(): Promise<ProjectStats> {
-    return this.fetch<ProjectStats>("/api/redcap/stats");
+  async getWP6Sessions(limit = 50): Promise<PaginatedResponse<WP6Session>> {
+    return this.fetch<PaginatedResponse<WP6Session>>(`/api/portal/wp6/sessions?limit=${limit}`);
   }
 }
 
