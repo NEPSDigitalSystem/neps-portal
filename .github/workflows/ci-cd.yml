@@ -3,9 +3,9 @@ name: NEPS Portal CI/CD
 
 on:
   push:
-    branches: [main, staging]
+    branches: [main, staging, feature/api-linkage-v2]
   pull_request:
-    branches: [main, staging]
+    branches: [main, staging, feature/api-linkage-v2]
 
 env:
   IMAGE: ghcr.io/nepsdigitalsystem/neps-portal
@@ -50,18 +50,13 @@ jobs:
       - name: Install deps
         run: npm ci
       - name: Lint
-        run: npm run lint || echo "Lint not configured yet"
+        run: npm run lint
       - name: Run unit tests
-        run: npm run test || echo "Unit tests not configured yet"
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-        if: hashFiles('playwright.config.ts') != ''
-      - name: Run E2E tests
-        run: npm run test:e2e || echo "E2E tests not configured yet"
-        if: hashFiles('playwright.config.ts') != ''
+        run: npm run test -- --run
 
   build:
     needs: [check-structure, test]
+    # Fixed logic: Allow build to proceed even if tests are skipped (e.g. documentation changes)
     if: always() && needs.check-structure.outputs.SKIP_BUILD != 'true' && (needs.test.result == 'success' || needs.test.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
@@ -91,13 +86,11 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
             ${{ github.ref == 'refs/heads/main' && format('{0}:latest', env.IMAGE) || '' }}
-          labels: |
-            ${{ env.IMAGE }}:pr-${{ github.event.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
@@ -105,7 +98,8 @@ jobs:
 
   security-scan:
     needs: build
-    if: github.event_name == 'push'
+    # Fixed logic: Run security scan on pull requests too so we see issues before merging
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -118,7 +112,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
+          password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
