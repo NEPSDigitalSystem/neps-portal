@@ -1,9 +1,9 @@
 // src/app/components/AlertCard.tsx
-import { alerts } from "@/app/data/dummyData";
+import { alerts as dummyAlerts } from "@/app/data/dummyData";
 import { dangerAssets } from "@/app/utils/dangerConfig";
 import Image from "next/image";
 
-export function AlertCard() {
+export function AlertCard({ alertsData = dummyAlerts }: { alertsData?: unknown[] }) {
   return (
     <div className="bg-white w-full lg:w-[35%] shadow-sm border border-gray-100 text-red-700 p-3 rounded-xl">
       <div className="flex items-center justify-between mb-3">
@@ -14,8 +14,8 @@ export function AlertCard() {
       </div>
 
       <div className="border border-red-100 rounded-xl overflow-hidden bg-white">
-        {alerts.map((alert) => {
-          const icon = dangerAssets[alert.severity];
+        {(alertsData as typeof dummyAlerts).map((alert) => {
+          const icon = dangerAssets[alert.severity as keyof typeof dangerAssets] || dangerAssets.low;
 
           return (
             <div key={alert.id}>

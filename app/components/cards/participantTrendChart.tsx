@@ -1,6 +1,6 @@
 "use client"
 
-import { participantTrendData } from "@/app/data/dummyData"
+import { participantTrendData as dummyParticipantTrendData } from "@/app/data/dummyData"
 import Link from "next/link"
 import {
   LineChart,
@@ -13,7 +13,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 
-export function ParticipantTrendChart() {
+export function ParticipantTrendChart({ data = dummyParticipantTrendData }: { data?: unknown[] }) {
   return (
     <div className="relative bg-white rounded-xl min-h-[300px] p-4 shadow-sm border border-gray-100 flex flex-col w-full lg:w-[50%]">
       <div className="flex justify-between items-center mb-3">
@@ -25,7 +25,7 @@ export function ParticipantTrendChart() {
 
       <div className="h-52 w-full pb-5">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={participantTrendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <LineChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid vertical={false} stroke="#f0f0f0" />
             <XAxis
               dataKey="month"
