@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { stressScoreData } from '@/app/data/dummyData';
+import { stressScoreData as dummyStressScoreData } from '@/app/data/dummyData';
 import {
   ComposedChart,
   Line,
@@ -14,7 +14,7 @@ import {
   Tooltip,
 } from 'recharts';
 
-export function StressScoreTrend() {
+export function StressScoreTrend({ data = dummyStressScoreData }: { data?: unknown[] }) {
   return (
     <div className="w-full lg:w-[50%] min-h-[300px] relative p-4 bg-white rounded-xl shadow-sm border border-gray-100">
       <div className="flex justify-between items-center mb-3">
@@ -30,7 +30,7 @@ export function StressScoreTrend() {
       <div className="min-h-[120px] h-50 w-full pb-5">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
-            data={stressScoreData}
+            data={data}
             margin={{ top: 10, right: 0, left: -35, bottom: 0 }}
           >
             <CartesianGrid vertical={false} stroke="#f0f0f0" />
