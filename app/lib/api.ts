@@ -87,8 +87,8 @@ class ApiClient {
   }
 
   // --- WP6 INTERVENTIONS ---
-  async getWP6Summary(): Promise<any> {
-    return this.fetch<any>("/api/portal/wp6/summary");
+  async getWP6Summary(): Promise<unknown> {
+    return this.fetch<unknown>("/api/portal/wp6/summary");
   }
 
   async getWP6Sessions(limit = 50): Promise<PaginatedResponse<WP6Session>> {

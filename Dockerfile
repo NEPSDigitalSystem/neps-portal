@@ -1,10 +1,10 @@
-FROM node:26-slim AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
 # Install deps first for better layer caching
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 
 # Copy source
 COPY . .
@@ -13,7 +13,7 @@ COPY . .
 RUN npm run build
 
 # Production image
-FROM node:26-slim
+FROM node:20-slim
 
 WORKDIR /app
 

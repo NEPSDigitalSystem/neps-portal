@@ -4,7 +4,7 @@ import { register, collectDefaultMetrics } from "prom-client";
 // Ensure default metrics are collected
 try {
   collectDefaultMetrics();
-} catch (e) {
+} catch {
   // Ignore errors if it's already registered
 }
 
@@ -17,7 +17,7 @@ export async function GET() {
         "Content-Type": register.contentType,
       },
     });
-  } catch (error) {
+  } catch {
     return new NextResponse("Internal Server Error", { status: 500 });
   }
 }
