@@ -107,16 +107,9 @@ jobs:
         continue-on-error: true
         with:
           image-ref: ${{ env.IMAGE }}:${{ github.sha }}
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
-          
-      - name: Upload Trivy scan results to GitHub
-        uses: github/codeql-action/upload-sarif@v4
-        if: always() && hashFiles('trivy-results.sarif') != ''
-        with:
-          sarif_file: 'trivy-results.sarif'
 
   # ─── DEPLOY STAGE ───
   deploy:
