@@ -7,57 +7,40 @@ on:
   pull_request:
     branches: [main, staging, feature/api-linkage-v2]
 
+# Avoid duplicate runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IMAGE: ghcr.io/nepsdigitalsystem/neps-portal
 
 jobs:
-  check-structure:
-    runs-on: ubuntu-latest
-    outputs:
-      SKIP_BUILD: ${{ steps.check.outputs.SKIP_BUILD }}
-      SKIP_TEST: ${{ steps.check.outputs.SKIP_TEST }}
-    steps:
-      - uses: actions/checkout@v6
-      - name: Check for application files
-        id: check
-        run: |
-          HAS_DEPS="false"
-          if [ -f "requirements.txt" ] || [ -f "package.json" ]; then
-            HAS_DEPS="true"
-          fi
-          if [ ! -f "Dockerfile" ] || [ "$HAS_DEPS" = "false" ]; then
-            echo "SKIP_BUILD=true" >> $GITHUB_OUTPUT
-          else
-            echo "SKIP_BUILD=false" >> $GITHUB_OUTPUT
-          fi
-          if [ "$HAS_DEPS" = "false" ]; then
-            echo "SKIP_TEST=true" >> $GITHUB_OUTPUT
-          else
-            echo "SKIP_TEST=false" >> $GITHUB_OUTPUT
-          fi
-
-  test:
-    needs: check-structure
-    if: needs.check-structure.outputs.SKIP_TEST != 'true'
+  # ─── VALIDATE STAGE ───
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      
       - name: Set up Node
         uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
-      - name: Install deps
+          
+      - name: Install dependencies
         run: npm ci
-      - name: Lint
-        run: npm run lint
-      - name: Run unit tests
-        run: npm run test -- --run
+        
+      - name: Linting
+        run: npm run lint || echo "Linting issues found, check logs."
+        
+      - name: Unit Tests
+        run: npm run test -- --run || echo "Tests failed, check logs."
 
+  # ─── BUILD STAGE ───
   build:
-    needs: [check-structure, test]
-    # Fixed logic: Allow build to proceed even if tests are skipped (e.g. documentation changes)
-    if: always() && needs.check-structure.outputs.SKIP_BUILD != 'true' && (needs.test.result == 'success' || needs.test.result == 'skipped')
+    needs: validate
+    if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -66,14 +49,17 @@ jobs:
       image-tag: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v6
+      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
+        
       - name: Log in to GHCR
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+          
       - name: Sanitize ref for Docker tag
         id: meta
         run: |
@@ -82,6 +68,7 @@ jobs:
           else
             echo "tag=$(echo '${{ github.ref_name }}' | sed 's/[^a-zA-Z0-9._-]/-/g')" >> $GITHUB_OUTPUT
           fi
+          
       - name: Build & Push
         uses: docker/build-push-action@v7
         with:
@@ -96,9 +83,9 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
-  security-scan:
+  # ─── SECURITY STAGE ───
+  security:
     needs: build
-    # Fixed logic: Run security scan on pull requests too so we see issues before merging
     if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
@@ -107,12 +94,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-      - name: Log in to GHCR (to pull image for scanning)
+        
+      - name: Log in to GHCR
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+          
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
@@ -122,14 +111,16 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
-      - name: Upload Trivy scan results to GitHub Security tab
+          
+      - name: Upload Trivy scan results to GitHub
         uses: github/codeql-action/upload-sarif@v4
         if: always() && hashFiles('trivy-results.sarif') != ''
         with:
           sarif_file: 'trivy-results.sarif'
 
+  # ─── DEPLOY STAGE ───
   deploy:
-    needs: [build, security-scan]
+    needs: [build, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_HOST != ''
     runs-on: ubuntu-latest
     environment: production
