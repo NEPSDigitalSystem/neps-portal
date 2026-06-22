@@ -32,10 +32,10 @@ jobs:
         run: npm ci
         
       - name: Linting
-        run: npm run lint || echo "Linting issues found, check logs."
+        run: npm run lint
         
       - name: Unit Tests
-        run: npm run test -- --run || echo "Tests failed, check logs."
+        run: npm run test -- --run
 
   # ─── BUILD STAGE ───
   build:
@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+          push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
@@ -86,7 +86,7 @@ jobs:
   # ─── SECURITY STAGE ───
   security:
     needs: build
-    if: always() && needs.build.result == 'success'
+    if: github.event_name == 'push' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -104,12 +104,12 @@ jobs:
           
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
-        continue-on-error: true
+        continue-on-error: false
         with:
           image-ref: ${{ env.IMAGE }}:${{ github.sha }}
           format: 'table'
           severity: 'CRITICAL,HIGH'
-          exit-code: '0'
+          exit-code: '1'
 
   # ─── DEPLOY STAGE ───
   deploy:
@@ -127,7 +127,9 @@ jobs:
           script: |
             cd /opt/neps-infrastructure
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose pull neps-portal
-            docker compose up -d --no-deps neps-portal
+            export IMAGE_TAG=${{ github.sha }}
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull neps-portal
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps neps-portal
             docker image prune -f
             echo "Deployed neps-portal:${{ github.sha }} at $(date)"
+            echo "${{ github.sha }},neps-portal,$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> .deployment-history
