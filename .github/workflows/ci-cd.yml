@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+          push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
@@ -86,7 +86,7 @@ jobs:
   # ─── SECURITY STAGE ───
   security:
     needs: build
-    if: always() && needs.build.result == 'success'
+    if: github.event_name == 'push' && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
