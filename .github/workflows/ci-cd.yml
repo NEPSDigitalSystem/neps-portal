@@ -3,11 +3,10 @@ name: NEPS Portal CI/CD
 
 on:
   push:
-    branches: [main, staging, feature/api-linkage-v2]
+    branches: [main, staging]
   pull_request:
-    branches: [main, staging, feature/api-linkage-v2]
+    branches: [main, staging]
 
-# Avoid duplicate runs for the same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -16,7 +15,6 @@ env:
   IMAGE: ghcr.io/nepsdigitalsystem/neps-portal
 
 jobs:
-  # ─── VALIDATE STAGE ───
   validate:
     runs-on: ubuntu-latest
     steps:
@@ -37,7 +35,6 @@ jobs:
       - name: Unit Tests
         run: npm run test -- --run
 
-  # ─── BUILD STAGE ───
   build:
     needs: validate
     if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
@@ -73,7 +70,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' }}  # ← ONLY push on merge, not PRs
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
@@ -83,10 +80,9 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
-  # ─── SECURITY STAGE ───
   security:
     needs: build
-    if: github.event_name == 'push' && needs.build.result == 'success'
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -107,11 +103,17 @@ jobs:
         continue-on-error: false
         with:
           image-ref: ${{ env.IMAGE }}:${{ github.sha }}
-          format: 'table'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
 
-  # ─── DEPLOY STAGE ───
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        with:
+          sarif_file: 'trivy-results.sarif'
+
   deploy:
     needs: [build, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_HOST != ''

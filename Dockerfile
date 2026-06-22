@@ -1,36 +1,35 @@
-FROM node:20-slim AS builder
+# neps-portal/Dockerfile
+# ─── Builder stage ───
+FROM node:20.19.0-alpine AS builder
 
 WORKDIR /app
 
-# Install deps first for better layer caching
+# Install dependencies
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source
+# Copy source and build
 COPY . .
-
-# Build for production
 RUN npm run build
 
-# Production image
-FROM node:20-slim
+# ─── Runner stage ───
+FROM node:20.19.0-alpine
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
 
 WORKDIR /app
 
-# Non-root user for security
-RUN groupadd --system --gid 1001 nodejs && \
-    useradd --system --uid 1001 nextjs
-
-# Copy built application from builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Set ownership to non-root user
-RUN chown -R nextjs:nodejs /app
+# Copy only what's needed for production
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./ 
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
