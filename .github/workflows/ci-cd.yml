@@ -127,7 +127,9 @@ jobs:
           script: |
             cd /opt/neps-infrastructure
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            docker compose pull neps-portal
-            docker compose up -d --no-deps neps-portal
+            export IMAGE_TAG=${{ github.sha }}
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml pull neps-portal
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --no-deps neps-portal
             docker image prune -f
             echo "Deployed neps-portal:${{ github.sha }} at $(date)"
+            echo "${{ github.sha }},neps-portal,$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> .deployment-history
