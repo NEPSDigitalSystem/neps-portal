@@ -45,7 +45,6 @@ export default async function AdminDashboard() {
           value = stats.total_participants.toLocaleString();
           break;
         case "Retention Rate":
-          // Assuming active / total is retention
           const rate = stats.total_participants > 0 ? (stats.active_participants / stats.total_participants) * 100 : 0;
           value = `${Math.round(rate)}%`;
           break;
@@ -53,10 +52,9 @@ export default async function AdminDashboard() {
           value = stats.high_severity_alerts.toString();
           break;
         case "Pending Forms":
-          value = stats.open_referrals.toString(); // Map to pending referrals/forms
+          value = stats.open_referrals.toString();
           break;
         case "Monthly Response Rate":
-          // Rough approximation or leave default if no mapping
           value = stats.total_surveys > 0 ? "100%" : stat.value;
           break;
       }
@@ -64,16 +62,14 @@ export default async function AdminDashboard() {
     return { ...stat, value };
   });
 
-  // Map distress trends if available
   const mappedTrendData = distressTrends 
     ? distressTrends.map(t => ({
         month: `Month ${t.month}`,
         average: t.avg_stress,
-        range: [t.avg_stress - 5, t.avg_stress + 5] // Rough range
+        range: [t.avg_stress - 5, t.avg_stress + 5]
       }))
     : stressScoreData;
 
-  // Map alerts if available
   const mappedAlertsData = alerts && alerts.length > 0
     ? alerts.map(a => ({
         id: a.id,
@@ -123,8 +119,6 @@ export default async function AdminDashboard() {
         <RecentActivityTable />
         <DemoGraphics />
       </div>
-      
-
     </div>
   )
 }

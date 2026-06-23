@@ -25,7 +25,6 @@ import { CountrySelector } from "./CountrySelector"
 
 type Role = "admin" | "country-lead" | "enumerator"
 
-
 type NavItem = {
   label: string
   href: string
@@ -88,22 +87,26 @@ const navByRole: Record<Role, NavSection[]> = {
   ],
 }
 
-/** Sidebar navigation rendered based on the authenticated user's role. */
 export function Sidebar({ role }: { role: string }) {
   const pathname = usePathname()
   const sections = navByRole[role as Role] ?? navByRole.enumerator
 
   return (
-    <aside className="w-65 bg-white border-r border-slate-100 flex flex-col">
-      <div className="px-6 py-5 border-b border-slate-100">
-        <span className="text-lg font-bold text-slate-800">NEPS Digital</span>
+    <aside className="w-65 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800/60 flex flex-col transition-colors duration-300">
+      
+      {/* Brand Header Container */}
+      <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/60">
+        <span className="text-lg font-bold text-slate-800 dark:text-slate-100">
+          NEPS Digital
+        </span>
       </div>
 
+      {/* Main Navigation Element */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-4 overflow-y-auto">
         {sections.map((section, index) => (
           <div key={index} className="flex flex-col gap-1">
             {section.title && (
-              <span className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+              <span className="px-3 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
                 {section.title}
               </span>
             )}
@@ -115,8 +118,8 @@ export function Sidebar({ role }: { role: string }) {
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     active
-                      ? "bg-sky-50 text-sky-600"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                      : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-200"
                   }`}
                 >
                   {item.icon}

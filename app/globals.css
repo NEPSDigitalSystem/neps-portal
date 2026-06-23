@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -49,5 +51,21 @@ body {
   .animate-fade-up-delay-2 {
     opacity: 0;
     animation: fadeUp 0.7s ease-out 0.4s forwards;
+  }
+}
+
+@layer base {
+  /* Light Mode Values */
+  :root {
+    --tooltip-bg: #ffffff;
+    --tooltip-border: #f1f5f9;
+    --tooltip-text: #0f172a;
+  }
+
+  /* Dark Mode Values */
+  .dark {
+    --tooltip-bg: #020617; /* Slate 950 */
+    --tooltip-border: #1e293b; /* Slate 800 */
+    --tooltip-text: #f8fafc; /* Slate 50 */
   }
 }

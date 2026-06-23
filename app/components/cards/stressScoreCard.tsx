@@ -16,30 +16,37 @@ import {
 
 export function StressScoreTrend({ data = dummyStressScoreData }: { data?: unknown[] }) {
   return (
-    <div className="w-full lg:w-[50%] min-h-[300px] relative p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="w-full lg:w-[50%] min-h-[300px] relative p-4 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-300">    
       <div className="flex justify-between items-center mb-3">
-        <div className="flex items-center gap-1.5 text-gray-900">
+        <div className="flex items-center gap-1.5 text-slate-900 dark:text-slate-100">
           <p className="text-sm font-semibold">Stress Score Trend (All Sites)</p>
-          <Image src="/info.png" alt="info" width={15} height={15}/>
+          <Image 
+            src="/info.png" 
+            alt="info" 
+            width={15} 
+            height={15}
+            className="dark:opacity-70 dark:invert-[0.1]"
+          />
         </div>
-        <select className="p-0 bg-gray-50 border border-gray-200 text-xs rounded-lg px-1 py-1.2 text-gray-700 font-medium outline-none">
+        <select className="bg-gray-50 dark:bg-slate-950 border border-gray-200 dark:border-slate-800 text-xs rounded-lg px-2 py-1 text-gray-700 dark:text-slate-300 font-medium outline-none transition-colors cursor-pointer">
           <option>Last 6 Months</option>
         </select>
       </div>
 
-      <div className="min-h-[120px] h-50 w-full pb-5">
+      <div className="min-h-[120px] h-50 w-full pb-5 select-none">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart
             data={data}
             margin={{ top: 10, right: 0, left: -35, bottom: 0 }}
           >
-            <CartesianGrid vertical={false} stroke="#f0f0f0" />
+            <CartesianGrid vertical={false} stroke="currentColor" className="text-slate-100 dark:text-slate-800/40" />
 
             <XAxis 
               dataKey="month" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: '#6b7280', fontSize: 13 }}
+              tick={{ fill: 'currentColor', fontSize: 13 }}
+              className="text-slate-400 dark:text-slate-500"
               dy={10}
             />
 
@@ -48,7 +55,8 @@ export function StressScoreTrend({ data = dummyStressScoreData }: { data?: unkno
               ticks={[0, 10, 20, 30, 40]}
               axisLine={false} 
               tickLine={false}
-              tick={{ fill: '#6b7280', fontSize: 13 }}
+              tick={{ fill: 'currentColor', fontSize: 13 }}
+              className="text-slate-400 dark:text-slate-500"
             />
 
             <YAxis 
@@ -65,23 +73,26 @@ export function StressScoreTrend({ data = dummyStressScoreData }: { data?: unkno
                 if (value === 35) return 'High';
                 return '';
               }}
-              tick={{ fill: '#374151af', fontSize: 11, fontWeight: 500 }}
+              tick={{ fill: 'currentColor', fontSize: 11, fontWeight: 500 }}
+              className="text-slate-600 dark:text-slate-400"
             />
+            
             <Tooltip
               contentStyle={{
                 borderRadius: "8px",
-                border: "1px solid #e5e7eb",
                 fontSize: "12px",
+                backgroundColor: 'var(--tooltip-bg, #ffffff)', 
+                borderColor: 'var(--tooltip-border, #e2e8f0)',
+                color: 'var(--tooltip-text, #0f172a)'
               }}
+              wrapperStyle={{ outline: 'none' }}
               formatter={(value, name) => {
                 if (name === "range" && Array.isArray(value)) {
                   return [`[${value[0]} - ${value[1]}]`, "Stress Range"];
                 }
-
                 if (name === "average") {
                   return [value, "Stress Score Average"];
                 }
-
                 return [value, name];
               }}
               labelFormatter={(label) => `Month: ${label}`}
@@ -91,15 +102,16 @@ export function StressScoreTrend({ data = dummyStressScoreData }: { data?: unkno
               type="monotone"
               dataKey="range"
               stroke="none"
-              fill="#93c5fd"
-              fillOpacity={0.7}
+              fill="currentColor"
+              className="text-sky-400/50 dark:text-sky-500/20"
+              fillOpacity={1}
             />
 
             <Line
               yAxisId="right"
               type="monotone"
               dataKey="average"
-              stroke="#2563eb"
+              stroke="#3b82f6"
               strokeWidth={2.5}
               dot={false}
               activeDot={{ r: 6 }}
@@ -108,8 +120,10 @@ export function StressScoreTrend({ data = dummyStressScoreData }: { data?: unkno
         </ResponsiveContainer>
       </div>
 
-      <div className="flex absolute bottom-2 right-4">
-        <Link className="text-sm hover:text-blue-700 font-semibold text-blue-500" href="#">View Detailed Trends <span>&rarr;</span></Link>
+      <div className="flex absolute bottom-3 right-4">
+        <Link className="text-sm hover:text-sky-600 dark:text-sky-400 dark:hover:text-sky-300 font-semibold text-sky-500 transition-colors" href="#">
+          View Detailed Trends <span className="inline-block transform translate-y-[1px]">&rarr;</span>
+        </Link>
       </div>
     </div>
   );
