@@ -4,29 +4,31 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 3
+      interval: "daily"
+    open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "frontend"
+      - "security"
 
   # Docker base image
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "docker"
+      - "security"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "ci-cd"
+      - "security"
