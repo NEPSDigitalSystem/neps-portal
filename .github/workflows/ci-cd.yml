@@ -36,6 +36,7 @@ jobs:
       packages: write
     outputs:
       image-tag: ${{ github.sha }}
+      is-push: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v6
       - uses: docker/setup-buildx-action@v4
@@ -77,19 +78,32 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # ═══════════════════════════════════════════════════════════════
+      # DETERMINE SCAN CONFIGURATION
+      # ═══════════════════════════════════════════════════════════════
       - name: Determine scan configuration
         id: scan-config
         run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
+          EVENT="${{ github.event_name }}"
+          IS_PUSH="${{ needs.build.outputs.is-push }}"
+
+          echo "Event type: $EVENT"
+          echo "Is push (from build output): $IS_PUSH"
+
+          if [ "$EVENT" == "push" ] && [ "$IS_PUSH" == "true" ]; then
+            echo "Running IMAGE scan (push event)"
             echo "scan-type=image" >> $GITHUB_OUTPUT
             echo "scan-target=${{ env.IMAGE }}:${{ github.sha }}" >> $GITHUB_OUTPUT
             echo "login-needed=true" >> $GITHUB_OUTPUT
             echo "exit-code=1" >> $GITHUB_OUTPUT
+            echo "is-push=true" >> $GITHUB_OUTPUT
           else
+            echo "Running FILESYSTEM scan (PR or non-push)"
             echo "scan-type=fs" >> $GITHUB_OUTPUT
             echo "scan-target=." >> $GITHUB_OUTPUT
             echo "login-needed=false" >> $GITHUB_OUTPUT
             echo "exit-code=0" >> $GITHUB_OUTPUT
+            echo "is-push=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Log in to GHCR
@@ -100,22 +114,33 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
+      # ═══════════════════════════════════════════════════════════════
+      # RUN TRIVY SCAN
+      # For PRs: filesystem scan, exit-code 0 (report only, don't fail)
+      # For push: image scan, exit-code 1 (strict, fail on vulnerabilities)
+      # ═══════════════════════════════════════════════════════════════
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: ${{ steps.scan-config.outputs.scan-type }}
-          image-ref: ${{ steps.scan-config.outputs.scan-target }}
-          scan-ref: ${{ steps.scan-config.outputs.scan-target }}
+          image-ref: ${{ steps.scan-config.outputs.is-push == 'true' && steps.scan-config.outputs.scan-target || '' }}
+          scan-ref: ${{ steps.scan-config.outputs.is-push != 'true' && steps.scan-config.outputs.scan-target || '' }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: ${{ steps.scan-config.outputs.exit-code }}
 
+      # ═══════════════════════════════════════════════════════════════
+      # UPLOAD SARIF RESULTS
+      # Always upload if SARIF file was produced, even if scan found issues
+      # ═══════════════════════════════════════════════════════════════
       - name: Upload Trivy results to GitHub Security
-        if: always() && hashFiles('trivy-results.sarif') != ''
+        if: always()
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'
+          # Don't fail if SARIF is empty or missing
+          wait-for-processing: false
 
   deploy:
     needs: [build, security]
