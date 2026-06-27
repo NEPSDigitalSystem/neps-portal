@@ -7,7 +7,6 @@ on:
   pull_request:
     branches: [main, staging, feature/api-linkage-v2]
 
-# Avoid duplicate runs for the same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -20,10 +19,10 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
@@ -48,12 +47,13 @@ jobs:
     outputs:
       image-tag: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
         
       - name: Log in to GHCR
+        if: github.event_name == 'push' || github.actor != 'dependabot[bot]'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          push: ${{ github.event_name == 'push' }}
+          push: ${{ github.event_name == 'push' && github.actor != 'dependabot[bot]' }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}
@@ -84,32 +84,57 @@ jobs:
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
   # ─── SECURITY STAGE ───
+  # FIXED: Restructured to handle both push and PR events, including Dependabot
   security:
     needs: build
-    if: github.event_name == 'push' && needs.build.result == 'success'
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
+      packages: read  # Needed to pull from GHCR on push events
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
-        
+        uses: actions/checkout@v4
+
+      # ── PUSH EVENT: Image is in GHCR, scan remotely ──
       - name: Log in to GHCR
+        if: github.event_name == 'push'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
           
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+      - name: Run Trivy vulnerability scanner (image from GHCR)
+        if: github.event_name == 'push'
+        uses: aquasecurity/trivy-action@0.29.0  # FIXED: Pinned version, not master
         continue-on-error: false
         with:
           image-ref: ${{ env.IMAGE }}:${{ github.sha }}
-          format: 'table'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
+
+      # ── PR EVENT (including Dependabot): Scan filesystem, not image ──
+      - name: Run Trivy vulnerability scanner (filesystem)
+        if: github.event_name == 'pull_request'
+        uses: aquasecurity/trivy-action@0.29.0
+        continue-on-error: false
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Upload Trivy results to GitHub Security
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: 'trivy-results.sarif'
 
   # ─── DEPLOY STAGE ───
   deploy:

@@ -1,7 +1,7 @@
 "use client"
 
 import { Bell, Search } from "lucide-react"
-import { ThemeToggle } from "../../components/themeToggle"
+import { ThemeToggle } from "../ThemeToggle"
 
 type User = {
   name?: string | null
