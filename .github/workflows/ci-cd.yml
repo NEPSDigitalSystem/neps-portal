@@ -1,7 +1,4 @@
 # neps-portal/.github/workflows/ci-cd.yml
-# NEPS Portal CI/CD - Fixed for Dependabot PRs, Trivy version pinning, and security scanning
-# Last updated: 2026-06-27
-
 name: NEPS Portal CI/CD
 
 on:
@@ -10,7 +7,6 @@ on:
   pull_request:
     branches: [main, staging, feature/api-linkage-v2]
 
-# Avoid duplicate runs for the same PR
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -19,32 +15,18 @@ env:
   IMAGE: ghcr.io/nepsdigitalsystem/neps-portal
 
 jobs:
-  # ═══════════════════════════════════════════════════════════════
-  # VALIDATE STAGE
-  # ═══════════════════════════════════════════════════════════════
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up Node
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'npm'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test -- --run
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Linting
-        run: npm run lint
-
-      - name: Unit Tests
-        run: npm run test -- --run
-
-  # ═══════════════════════════════════════════════════════════════
-  # BUILD STAGE
-  # ═══════════════════════════════════════════════════════════════
   build:
     needs: validate
     if: always() && (needs.validate.result == 'success' || needs.validate.result == 'skipped')
@@ -56,11 +38,7 @@ jobs:
       image-tag: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v6
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      # Only login to GHCR on push events (Dependabot PRs lack write permissions)
+      - uses: docker/setup-buildx-action@v4
       - name: Log in to GHCR
         if: github.event_name == 'push' && github.actor != 'dependabot[bot]'
         uses: docker/login-action@v4
@@ -68,21 +46,16 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
-
-      - name: Sanitize ref for Docker tag
-        id: meta
+      - id: meta
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "tag=pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
           else
             echo "tag=$(echo '${{ github.ref_name }}' | sed 's/[^a-zA-Z0-9._-]/-/g')" >> $GITHUB_OUTPUT
           fi
-
-      - name: Build & Push
-        uses: docker/build-push-action@v7
+      - uses: docker/build-push-action@v7
         with:
           context: .
-          # Only push on push events (not PRs). Never push from Dependabot.
           push: ${{ github.event_name == 'push' && github.actor != 'dependabot[bot]' }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
@@ -93,13 +66,6 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
-  # ═══════════════════════════════════════════════════════════════
-  # SECURITY STAGE
-  # Fixed: Handles both push (image scan) and PR (filesystem scan)
-  # Fixed: Pinned trivy-action to v0.36.0 (not @master or 0.29.0)
-  # Fixed: PR scans report only (exit-code: 0) to allow security fixes to merge
-  # Fixed: Push scans are strict (exit-code: 1) to block vulnerabilities in main
-  # ═══════════════════════════════════════════════════════════════
   security:
     needs: build
     if: always() && needs.build.result == 'success'
@@ -107,46 +73,43 @@ jobs:
     permissions:
       contents: read
       security-events: write
-      packages: read  # Needed to pull from GHCR on push events
+      packages: read
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
 
-      # ── PUSH EVENT: Image was pushed to GHCR, scan remotely ──
+      - name: Determine scan configuration
+        id: scan-config
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "scan-type=image" >> $GITHUB_OUTPUT
+            echo "scan-target=${{ env.IMAGE }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "login-needed=true" >> $GITHUB_OUTPUT
+            echo "exit-code=1" >> $GITHUB_OUTPUT
+          else
+            echo "scan-type=fs" >> $GITHUB_OUTPUT
+            echo "scan-target=." >> $GITHUB_OUTPUT
+            echo "login-needed=false" >> $GITHUB_OUTPUT
+            echo "exit-code=0" >> $GITHUB_OUTPUT
+          fi
+
       - name: Log in to GHCR
-        if: github.event_name == 'push'
+        if: steps.scan-config.outputs.login-needed == 'true'
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
-      - name: Run Trivy vulnerability scanner (image from GHCR)
-        if: github.event_name == 'push'
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@v0.36.0
-        continue-on-error: false
         with:
-          image-ref: ${{ env.IMAGE }}:${{ github.sha }}
+          scan-type: ${{ steps.scan-config.outputs.scan-type }}
+          image-ref: ${{ steps.scan-config.outputs.scan-target }}
+          scan-ref: ${{ steps.scan-config.outputs.scan-target }}
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
-
-      # ── PR EVENT (including Dependabot): Scan filesystem, not image ──
-      # PRs don't push images to GHCR, so we scan the source code directly.
-      # exit-code: '0' prevents blocking security fix PRs from merging.
-      # The vulnerabilities will be re-checked after merge via the push event scan.
-      - name: Run Trivy vulnerability scanner (filesystem)
-        if: github.event_name == 'pull_request'
-        uses: aquasecurity/trivy-action@v0.36.0
-        continue-on-error: true
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-          exit-code: '0'
+          exit-code: ${{ steps.scan-config.outputs.exit-code }}
 
       - name: Upload Trivy results to GitHub Security
         if: always() && hashFiles('trivy-results.sarif') != ''
@@ -154,17 +117,13 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-  # ═══════════════════════════════════════════════════════════════
-  # DEPLOY STAGE
-  # ═══════════════════════════════════════════════════════════════
   deploy:
     needs: [build, security]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_HOST != ''
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Deploy to server via SSH
-        uses: appleboy/ssh-action@v1.2.5
+      - uses: appleboy/ssh-action@v1.2.5
         with:
           host: ${{ vars.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
