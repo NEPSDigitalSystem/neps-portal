@@ -8,9 +8,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      authorize: async (credentials) => {
         // Add guard clause to check if credentials exists
-        if (!credentials) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
