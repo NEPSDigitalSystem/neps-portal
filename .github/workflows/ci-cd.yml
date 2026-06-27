@@ -108,7 +108,7 @@ jobs:
           
       - name: Run Trivy vulnerability scanner (image from GHCR)
         if: github.event_name == 'push'
-        uses: aquasecurity/trivy-action@0.29.0  # FIXED: Pinned version, not master
+        uses: aquasecurity/trivy-action@v0.36.0  # FIXED: Pinned version, not master
         continue-on-error: false
         with:
           image-ref: ${{ env.IMAGE }}:${{ github.sha }}
@@ -120,7 +120,7 @@ jobs:
       # ── PR EVENT (including Dependabot): Scan filesystem, not image ──
       - name: Run Trivy vulnerability scanner (filesystem)
         if: github.event_name == 'pull_request'
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@v0.36.0
         continue-on-error: false
         with:
           scan-type: 'fs'
