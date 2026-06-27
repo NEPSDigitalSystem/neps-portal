@@ -9,6 +9,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        // Add guard clause to check if credentials exists
+        if (!credentials) {
+          return null;
+        }
+
         // Temporary mock users — replace with FastAPI call when backend is ready
         const users = [
           { id: "1", email: "enumerator@neps.org", password: "password123", role: "enumerator", name: "Test Enumerator" },
