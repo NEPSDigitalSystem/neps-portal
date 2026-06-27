@@ -1,0 +1,7 @@
+# Trivy Vulnerability Allowlist
+# This file contains CVEs that have been reviewed and accepted as acceptable risk
+# Add entries here for false positives or vulnerabilities that are mitigated by other controls
+
+# Example format (uncomment and modify as needed):
+# CVE-2024-1234  # Accepted risk - mitigated by network isolation
+# CVE-2024-5678  # False positive - library not used in production build
