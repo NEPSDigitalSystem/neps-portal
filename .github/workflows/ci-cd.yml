@@ -81,15 +81,15 @@ jobs:
         id: scan-config
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
-            echo "scan-mode=image" >> $GITHUB_OUTPUT
-            echo "scan-target=${{ env.IMAGE }}:${{ github.sha }}" >> $GITHUB_OUTPUT
-            echo "login-needed=true" >> $GITHUB_OUTPUT
-            echo "exit-code=1" >> $GITHUB_OUTPUT
+            echo "scan-mode=image" >> "$GITHUB_OUTPUT"
+            echo "scan-target=${{ env.IMAGE }}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
+            echo "login-needed=true" >> "$GITHUB_OUTPUT"
+            echo "exit-code=1" >> "$GITHUB_OUTPUT"
           else
-            echo "scan-mode=fs" >> $GITHUB_OUTPUT
-            echo "scan-target=." >> $GITHUB_OUTPUT
-            echo "login-needed=false" >> $GITHUB_OUTPUT
-            echo "exit-code=0" >> $GITHUB_OUTPUT
+            echo "scan-mode=fs" >> "$GITHUB_OUTPUT"
+            echo "scan-target=." >> "$GITHUB_OUTPUT"
+            echo "login-needed=false" >> "$GITHUB_OUTPUT"
+            echo "exit-code=0" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Log in to GHCR
@@ -110,6 +110,7 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
+          cache: 'true'
 
       # PR: Scan filesystem (report only, don't block merge)
       - name: Run Trivy vulnerability scanner (filesystem)
@@ -122,6 +123,7 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
+          cache: 'true'
 
       - name: Upload Trivy results to GitHub Security
         if: always()
