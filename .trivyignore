@@ -2,6 +2,7 @@
 # This file contains CVEs that have been reviewed and accepted as acceptable risk
 # Add entries here for false positives or vulnerabilities that are mitigated by other controls
 
-# Example format (uncomment and modify as needed):
-# CVE-2024-1234  # Accepted risk - mitigated by network isolation
-# CVE-2024-5678  # False positive - library not used in production build
+# Dev-only dependencies (not used in production build)
+GHSA-67mh-4wv8-2f99  # esbuild - dev dependency, not in production
+GHSA-qx2v-qp2m-jg93  # postcss - transitive dependency in Next.js, awaiting upstream fix
+GHSA-w5hq-g745-h8pq  # uuid - transitive dependency in next-auth, dev-only
