@@ -2,6 +2,9 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install build dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
 # Install deps first for better layer caching
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -21,7 +24,7 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init
 
 # Upgrade specific OS packages to the latest patched versions
-RUN apk upgrade --no-cache perl perl-archive-tar openssl tar
+RUN apk upgrade --no-cache openssl tar
 
 # Non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
