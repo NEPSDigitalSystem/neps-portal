@@ -81,15 +81,15 @@ jobs:
         id: scan-config
         run: |
           if [ "${{ github.event_name }}" == "push" ]; then
-            echo "scan-mode=image" >> "$GITHUB_OUTPUT"
-            echo "scan-target=${{ env.IMAGE }}:${{ github.sha }}" >> "$GITHUB_OUTPUT"
-            echo "login-needed=true" >> "$GITHUB_OUTPUT"
-            echo "exit-code=1" >> "$GITHUB_OUTPUT"
+            echo "scan-mode=image" >> $GITHUB_OUTPUT
+            echo "scan-target=${{ env.IMAGE }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "login-needed=true" >> $GITHUB_OUTPUT
+            echo "exit-code=1" >> $GITHUB_OUTPUT
           else
-            echo "scan-mode=fs" >> "$GITHUB_OUTPUT"
-            echo "scan-target=." >> "$GITHUB_OUTPUT"
-            echo "login-needed=false" >> "$GITHUB_OUTPUT"
-            echo "exit-code=0" >> "$GITHUB_OUTPUT"
+            echo "scan-mode=fs" >> $GITHUB_OUTPUT
+            echo "scan-target=." >> $GITHUB_OUTPUT
+            echo "login-needed=false" >> $GITHUB_OUTPUT
+            echo "exit-code=0" >> $GITHUB_OUTPUT
           fi
 
       - name: Log in to GHCR
@@ -100,7 +100,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
-      # PUSH: Scan Docker image (strict)
+      # PUSH: Scan Docker image from GHCR (strict - fail on vulnerabilities)
       - name: Run Trivy vulnerability scanner (image)
         if: steps.scan-config.outputs.scan-mode == 'image'
         uses: aquasecurity/trivy-action@v0.36.0
@@ -111,9 +111,8 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
           ignore-unfixed: true
-          cache: 'true'
 
-      # PR: Scan filesystem (report only, don't block merge)
+      # PR: Scan filesystem (report only - don't block merge)
       - name: Run Trivy vulnerability scanner (filesystem)
         if: steps.scan-config.outputs.scan-mode == 'fs'
         uses: aquasecurity/trivy-action@v0.36.0
@@ -124,31 +123,6 @@ jobs:
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
           exit-code: '0'
-          cache: 'true'
-
-      - name: Check vulnerability count
-        if: always() && hashFiles('trivy-results.sarif') != ''
-        run: |
-          if [ ! -f trivy-results.sarif ]; then
-            echo "No SARIF file found, skipping vulnerability count check"
-            exit 0
-          fi
-          
-          # Count vulnerabilities by severity (informational only)
-          CRITICAL=$(jq '[.runs[].results[].ruleId] | map(select(contains("CRITICAL"))) | length' trivy-results.sarif 2>/dev/null || echo "0")
-          HIGH=$(jq '[.runs[].results[].ruleId] | map(select(contains("HIGH"))) | length' trivy-results.sarif 2>/dev/null || echo "0")
-          
-          echo "Critical vulnerabilities: $CRITICAL"
-          echo "High vulnerabilities: $HIGH"
-          
-          # Only warn, don't fail - Trivy with ignore-unfixed handles the actual blocking
-          if [ "$CRITICAL" -gt 0 ]; then
-            echo "::warning::Found $CRITICAL critical vulnerabilities (check GitHub Security tab)"
-          fi
-          
-          if [ "$HIGH" -gt 5 ]; then
-            echo "::warning::Found $HIGH high vulnerabilities (threshold: 5)"
-          fi
 
       - name: Upload Trivy results to GitHub Security
         if: always()
