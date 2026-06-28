@@ -111,7 +111,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
           ignore-unfixed: true
-          args: --skip-dirs /app/node_modules
+          skip-dirs: /app/node_modules
 
       # PR: Scan filesystem (report only - don't block merge)
       - name: Run Trivy vulnerability scanner (filesystem)
