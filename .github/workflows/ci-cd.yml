@@ -101,6 +101,7 @@ jobs:
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
       # PUSH: Scan Docker image from GHCR (report-only - OS vulnerabilities in base image)
+      # TODO: Revert exit-code to '1' after fixing node:20-alpine CVEs by switching base image
       - name: Run Trivy vulnerability scanner (image)
         if: steps.scan-config.outputs.scan-mode == 'image'
         uses: aquasecurity/trivy-action@v0.36.0
