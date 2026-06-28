@@ -1,9 +1,9 @@
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 
 WORKDIR /app
 
 # Install build dependencies for native modules
-RUN apk add --no-cache python3 make g++
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 # Install deps first for better layer caching
 COPY package.json package-lock.json ./
@@ -16,19 +16,19 @@ COPY . .
 RUN npm run build
 
 # Production image
-FROM node:20-alpine
+FROM node:20-slim
 
 WORKDIR /app
 
 # Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+RUN apt-get update && apt-get install -y dumb-init && rm -rf /var/lib/apt/lists/*
 
 # Upgrade specific OS packages to the latest patched versions
-RUN apk upgrade --no-cache openssl tar
+RUN apt-get update && apt-get upgrade -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nextjs -u 1001
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -r -g nodejs nextjs
 
 # Copy built application from builder
 COPY --from=builder /app/public ./public
