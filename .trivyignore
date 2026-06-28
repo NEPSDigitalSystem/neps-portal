@@ -3,6 +3,16 @@
 # Add entries here for false positives or vulnerabilities that are mitigated by other controls
 
 # Dev-only dependencies (not used in production build)
-GHSA-67mh-4wv8-2f99  # esbuild - dev dependency, not in production
-GHSA-qx2v-qp2m-jg93  # postcss - transitive dependency in Next.js, awaiting upstream fix
-GHSA-w5hq-g745-h8pq  # uuid - transitive dependency in next-auth, dev-only
+# All vulnerabilities below are in dev dependencies or require breaking changes to fix
+
+# Critical - vitest (dev dependency, test framework)
+GHSA-5xrq-8626-4rwp  # vitest - arbitrary file read/execute in UI server, dev-only
+
+# High - vite (dev dependency, build tool)
+GHSA-fx2h-pf6j-xcff  # vite - path traversal bypass on Windows, dev-only
+
+# Moderate - dev dependencies and transitive deps
+GHSA-67mh-4wv8-2f99  # esbuild - CORS issue in dev server, not in production
+GHSA-qx2v-qp2m-jg93  # postcss - XSS in CSS stringify, transitive in Next.js, awaiting upstream fix
+GHSA-4w7w-66w2-5vf9  # vite - path traversal in optimized deps, dev-only
+GHSA-v6wh-96g9-6wx3  # vite - NTLMv2 hash disclosure via UNC path, dev-only
