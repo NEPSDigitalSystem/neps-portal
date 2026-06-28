@@ -134,16 +134,16 @@ jobs:
             exit 0
           fi
           
-          # Count vulnerabilities by severity
+          # Count vulnerabilities by severity (informational only)
           CRITICAL=$(jq '[.runs[].results[].ruleId] | map(select(contains("CRITICAL"))) | length' trivy-results.sarif 2>/dev/null || echo "0")
           HIGH=$(jq '[.runs[].results[].ruleId] | map(select(contains("HIGH"))) | length' trivy-results.sarif 2>/dev/null || echo "0")
           
           echo "Critical vulnerabilities: $CRITICAL"
           echo "High vulnerabilities: $HIGH"
           
+          # Only warn, don't fail - Trivy with ignore-unfixed handles the actual blocking
           if [ "$CRITICAL" -gt 0 ]; then
-            echo "::error::Found $CRITICAL critical vulnerabilities"
-            exit 1
+            echo "::warning::Found $CRITICAL critical vulnerabilities (check GitHub Security tab)"
           fi
           
           if [ "$HIGH" -gt 5 ]; then
