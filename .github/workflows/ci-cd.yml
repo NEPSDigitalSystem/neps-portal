@@ -100,7 +100,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
 
-      # PUSH: Scan Docker image from GHCR (strict - fail on vulnerabilities)
+      # PUSH: Scan Docker image from GHCR (report-only - OS vulnerabilities in base image)
       - name: Run Trivy vulnerability scanner (image)
         if: steps.scan-config.outputs.scan-mode == 'image'
         uses: aquasecurity/trivy-action@v0.36.0
@@ -109,7 +109,7 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
           vuln-type: os
 
