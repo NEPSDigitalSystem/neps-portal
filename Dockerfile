@@ -20,6 +20,9 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
+# Upgrade all OS packages to the latest patched versions
+RUN apk upgrade --no-cache
+
 # Non-root user for security
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
