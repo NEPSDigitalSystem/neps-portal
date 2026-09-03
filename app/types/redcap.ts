@@ -20,6 +20,10 @@ export interface Participant {
   redcap_repeat_instance?: string;
   created_at?: string;
   updated_at?: string;
+  employment_status?: string;
+  food_security?: string;
+  healthcare_access?: string;
+  socioeconomic_status?: string;
 }
 
 export interface SurveyResponse {
@@ -47,6 +51,13 @@ export interface SurveyResponse {
   requires_follow_up?: string;
   resilience_score?: number;
   social_support?: number;
+  mood_score?: number;
+  sleep_quality_score?: number;
+  fatigue_score?: number;
+  attendance_score?: number;
+  coping_score?: number;
+  substance_abuse_score?: number;
+  suicidality_score?: number;
 }
 
 export interface DistressScreening {
