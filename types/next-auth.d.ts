@@ -1,4 +1,3 @@
-/// <reference types="@testing-library/jest-dom" />
 import { DefaultSession, DefaultJWT } from "next-auth"
 
 declare module "next-auth" {
