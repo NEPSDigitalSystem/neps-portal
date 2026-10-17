@@ -8,26 +8,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
-        // Add guard clause to check if credentials exists
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        // Temporary mock users — replace with FastAPI call when backend is ready
-        const users = [
-          { id: "1", email: "enumerator@neps.org", password: "password123", role: "enumerator", name: "Test Enumerator" },
-          { id: "2", email: "lead@neps.org", password: "password123", role: "country-lead", name: "Test Country Lead" },
-          { id: "3", email: "admin@neps.org", password: "password123", role: "admin", name: "Test Admin" },
-        ]
-
-        const user = users.find(
-          (u) => u.email === credentials.email && u.password === credentials.password
-        )
-
-        if (!user) return null
-
-        return { id: user.id, email: user.email, name: user.name, role: user.role }
+      authorize: async () => {
+        // No verified identity provider is supplied in this source snapshot.
+        // Fail closed until the approved NDS identity adapter is configured.
+        return null;
       },
     }),
   ],
