@@ -1,15 +1,51 @@
 version: 2
 updates:
-  # npm (Next.js frontend)
+  # npm (Next.js frontend) - Combined production and dev dependencies
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "frontend"
+    groups:
+      # Group patch updates (bug fixes) - safe to merge together
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+        exclude-patterns:
+          - "*rc*"
+          - "*beta*"
+          - "*alpha*"
+      # Group minor updates for framework packages - need review
+      framework-minor:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+        update-types:
+          - "minor"
+      # Group development dependencies
+      dev-dependencies:
+        patterns:
+          - "@types/*"
+          - "eslint*"
+          - "@eslint/*"
+          - "vitest*"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "@playwright/*"
+          - "typescript"
+          - "tailwindcss"
+          - "@tailwind/*"
+    versioning-strategy: increase
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
 
   # Docker base image
   - package-ecosystem: "docker"
@@ -21,6 +57,16 @@ updates:
     labels:
       - "dependencies"
       - "docker"
+    groups:
+      docker-base:
+        patterns:
+          - "node:*"
+          - "python:*"
+          - "postgres:*"
+          - "redis:*"
+    commit-message:
+      prefix: "chore(docker)"
+      include: "scope"
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
@@ -32,3 +78,10 @@ updates:
     labels:
       - "dependencies"
       - "ci-cd"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
